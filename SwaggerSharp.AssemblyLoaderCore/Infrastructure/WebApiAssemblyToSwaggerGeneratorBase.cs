@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using SwaggerSharp.Core;
 
-namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
+namespace SwaggerSharp.AssemblyLoaderCore.Infrastructure
 {
     /// <summary></summary>
     public abstract class WebApiAssemblyToSwaggerGeneratorBase

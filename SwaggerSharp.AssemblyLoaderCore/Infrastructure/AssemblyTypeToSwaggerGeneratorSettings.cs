@@ -6,10 +6,9 @@
 // <author>Rico Suter, mail@rsuter.com</author>
 //-----------------------------------------------------------------------
 
-using NJsonSchema;
 using NJsonSchema.Generation;
 
-namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
+namespace SwaggerSharp.AssemblyLoaderCore.Infrastructure
 {
     /// <summary>Settings for the AssemblyTypeToSwaggerGenerator.</summary>
     public class AssemblyTypeToSwaggerGeneratorSettings : JsonSchemaGeneratorSettings
@@ -17,7 +16,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
         /// <summary>Initializes a new instance of the <see cref="AssemblyTypeToSwaggerGeneratorSettings"/> class.</summary>
         public AssemblyTypeToSwaggerGeneratorSettings()
         {
-            NullHandling = NullHandling.Swagger;
+            //NullHandling = NullHandling.Swagger;
             ReferencePaths = new string[] { };
         }
 

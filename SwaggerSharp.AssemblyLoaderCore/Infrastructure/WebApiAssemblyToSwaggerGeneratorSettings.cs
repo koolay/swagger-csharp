@@ -6,7 +6,9 @@
 // <author>Rico Suter, mail@rsuter.com</author>
 //-----------------------------------------------------------------------
 
-namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
+using SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi;
+
+namespace SwaggerSharp.AssemblyLoaderCore.Infrastructure
 {
     /// <summary>Settings for the WebApiAssemblyToSwaggerGenerator.</summary>
     public class WebApiAssemblyToSwaggerGeneratorSettings : WebApiToSwaggerGeneratorSettings

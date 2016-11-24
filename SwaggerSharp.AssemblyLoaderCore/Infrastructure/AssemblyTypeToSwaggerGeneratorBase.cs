@@ -6,10 +6,9 @@
 // <author>Rico Suter, mail@rsuter.com</author>
 //-----------------------------------------------------------------------
 
-using SwaggerSharp.CodeGeneration.SwaggerGenerators;
 using SwaggerSharp.Core;
 
-namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
+namespace SwaggerSharp.AssemblyLoaderCore.Infrastructure
 {
     /// <summary></summary>
     public abstract class AssemblyTypeToSwaggerGeneratorBase

@@ -48,6 +48,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="SwaggerSharp.AssemblyLoaderCore\SwaggerSharp.AssemblyLoaderCore.csproj">
+      <Project>{811C9409-4D87-44C9-8447-441E43C252D7}</Project>
+      <Name>SwaggerSharp.AssemblyLoaderCore</Name>
+    </ProjectReference>
     <ProjectReference Include="SwaggerSharp.CodeGeneration\SwaggerSharp.CodeGeneration.csproj">
       <Project>{B1CDEBF6-A340-47F0-A3B5-922E860E4AAF}</Project>
       <Name>SwaggerSharp.CodeGeneration</Name>
