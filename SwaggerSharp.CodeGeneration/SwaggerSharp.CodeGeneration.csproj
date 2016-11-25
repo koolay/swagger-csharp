@@ -54,6 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SwaggerGenerators\SwaggerGenerator.cs" />
     <Compile Include="SwaggerGenerators\SwaggerJsonSchemaGenerator.cs" />
+    <Compile Include="SwaggerGenerators\WebApi\AssemblyTypeToSwaggerGeneratorSettings.cs" />
     <Compile Include="SwaggerGenerators\WebApi\Processors\Contexts\DocumentProcessorContext.cs" />
     <Compile Include="SwaggerGenerators\WebApi\Processors\Contexts\OperationProcessorContext.cs" />
     <Compile Include="SwaggerGenerators\WebApi\Processors\DocumentTagsProcessor.cs" />
@@ -82,7 +83,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="SwaggerGenerators" />
-    <Folder Include="SwaggerGenerators\WebApi" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

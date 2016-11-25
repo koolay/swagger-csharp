@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using NJsonSchema;
 using NJsonSchema.Infrastructure;
 using NSwag;
+using NSwag.CodeGeneration.Infrastructure;
 using SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors.Contexts;
 using SwaggerSharp.Core;
 
@@ -36,7 +37,8 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         /// <summary>Initializes a new instance of the <see cref="WebApiToSwaggerGenerator" /> class.</summary>
         /// <param name="settings">The settings.</param>
         /// <param name="schemaGenerator">The schema generator.</param>
-        public WebApiToSwaggerGenerator(WebApiToSwaggerGeneratorSettings settings, SwaggerJsonSchemaGenerator schemaGenerator)
+        public WebApiToSwaggerGenerator(WebApiToSwaggerGeneratorSettings settings,
+            SwaggerJsonSchemaGenerator schemaGenerator)
         {
             Settings = settings;
             _schemaGenerator = schemaGenerator;
@@ -49,11 +51,13 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         {
             // TODO: Move to IControllerClassLoader interface
             return assembly.ExportedTypes
-                .Where(t => t.GetTypeInfo().IsAbstract == false)
-                .Where(t => t.Name.EndsWith("Controller") ||
-                            t.InheritsFrom("ApiController", TypeNameStyle.Name) ||
-                            t.InheritsFrom("Controller", TypeNameStyle.Name)) // in ASP.NET Core, a Web API controller inherits from Controller
-                .Where(t => t.GetTypeInfo().ImplementedInterfaces.All(i => i.FullName != "System.Web.Mvc.IController")); // no MVC controllers (legacy ASP.NET)
+                    .Where(t => t.GetTypeInfo().IsAbstract == false)
+                    .Where(t => t.Name.EndsWith("Controller") ||
+                                t.InheritsFrom("ApiController", TypeNameStyle.Name) ||
+                                t.InheritsFrom("Controller", TypeNameStyle.Name))
+                    // in ASP.NET Core, a Web API controller inherits from Controller
+                    .Where(t => t.GetTypeInfo().ImplementedInterfaces.All(i => i.FullName != "System.Web.Mvc.IController"));
+                // no MVC controllers (legacy ASP.NET)
         }
 
         /// <summary>Gets or sets the generator settings.</summary>
@@ -65,7 +69,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         /// <exception cref="InvalidOperationException">The operation has more than one body parameter.</exception>
         public SwaggerDocument GenerateForController<TController>()
         {
-            return GenerateForControllers(new[] { typeof(TController) });
+            return GenerateForControllers(new[] {typeof(TController)});
         }
 
         /// <summary>Generates a Swagger specification for the given controller type.</summary>
@@ -74,7 +78,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         /// <exception cref="InvalidOperationException">The operation has more than one body parameter.</exception>
         public SwaggerDocument GenerateForController(Type controllerType)
         {
-            return GenerateForControllers(new[] { controllerType });
+            return GenerateForControllers(new[] {controllerType});
         }
 
         /// <summary>Generates a Swagger specification for the given controller types.</summary>
@@ -86,10 +90,12 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
             var document = CreateDocument(Settings);
 
             var schemaResolver = new SchemaResolver();
-            var schemaDefinitionAppender = new SwaggerDocumentSchemaDefinitionAppender(document, Settings.TypeNameGenerator);
+            var schemaDefinitionAppender = new SwaggerDocumentSchemaDefinitionAppender(document,
+                Settings.TypeNameGenerator);
 
             foreach (var controllerType in controllerTypes)
-                GenerateForController(document, controllerType, new SwaggerGenerator(_schemaGenerator, Settings, schemaResolver, schemaDefinitionAppender));
+                GenerateForController(document, controllerType,
+                    new SwaggerGenerator(_schemaGenerator, Settings, schemaResolver, schemaDefinitionAppender));
 
             AppendRequiredSchemasToDefinitions(document, schemaResolver);
             document.GenerateOperationIds();
@@ -102,10 +108,12 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
 
         private SwaggerDocument CreateDocument(WebApiToSwaggerGeneratorSettings settings)
         {
-            var document = !string.IsNullOrEmpty(settings.DocumentTemplate) ? SwaggerDocument.FromJson(settings.DocumentTemplate) : new SwaggerDocument();
+            var document = !string.IsNullOrEmpty(settings.DocumentTemplate)
+                ? SwaggerDocument.FromJson(settings.DocumentTemplate)
+                : new SwaggerDocument();
 
-            document.Consumes = new List<string> { "application/json" };
-            document.Produces = new List<string> { "application/json" };
+            document.Consumes = new List<string> {"application/json"};
+            document.Produces = new List<string> {"application/json"};
             document.Info = new SwaggerInfo
             {
                 Title = settings.Title,
@@ -117,7 +125,8 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         }
 
         /// <exception cref="InvalidOperationException">The operation has more than one body parameter.</exception>
-        private void GenerateForController(SwaggerDocument document, Type controllerType, SwaggerGenerator swaggerGenerator)
+        private void GenerateForController(SwaggerDocument document, Type controllerType,
+            SwaggerGenerator swaggerGenerator)
         {
             var hasIgnoreAttribute = controllerType.GetTypeInfo()
                 .GetCustomAttributes()
@@ -153,7 +162,8 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
             AddOperationDescriptionsToDocument(document, operations, swaggerGenerator);
         }
 
-        private void AddOperationDescriptionsToDocument(SwaggerDocument document, List<Tuple<SwaggerOperationDescription, MethodInfo>> operations, SwaggerGenerator swaggerGenerator)
+        private void AddOperationDescriptionsToDocument(SwaggerDocument document,
+            List<Tuple<SwaggerOperationDescription, MethodInfo>> operations, SwaggerGenerator swaggerGenerator)
         {
             var allOperation = operations.Select(t => t.Item1).ToList();
             foreach (var tuple in operations)
@@ -168,7 +178,8 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
                         document.Paths[operation.Path] = new SwaggerOperations();
 
                     if (document.Paths[operation.Path].ContainsKey(operation.Method))
-                        throw new InvalidOperationException("The method '" + operation.Method + "' on path '" + operation.Path + "' is registered multiple times.");
+                        throw new InvalidOperationException("The method '" + operation.Method + "' on path '" +
+                                                            operation.Path + "' is registered multiple times.");
 
                     document.Paths[operation.Path][operation.Method] = operation.Operation;
                 }
@@ -176,26 +187,30 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         }
 
         private bool RunOperationProcessors(SwaggerDocument document, MethodInfo methodInfo,
-            SwaggerOperationDescription operationDescription, List<SwaggerOperationDescription> allOperations, SwaggerGenerator swaggerGenerator)
+            SwaggerOperationDescription operationDescription, List<SwaggerOperationDescription> allOperations,
+            SwaggerGenerator swaggerGenerator)
         {
             // 1. Run from settings
             foreach (var operationProcessor in Settings.OperationProcessors)
             {
-                if (operationProcessor.Process(new OperationProcessorContext(document, operationDescription, methodInfo, swaggerGenerator, allOperations)) == false)
+                if (
+                    operationProcessor.Process(new OperationProcessorContext(document, operationDescription, methodInfo,
+                        swaggerGenerator, allOperations)) == false)
                     return false;
             }
 
             // 2. Run from class attributes
             var operationProcessorAttribute = methodInfo.DeclaringType.GetTypeInfo()
                 .GetCustomAttributes()
-            // 3. Run from method attributes
+                // 3. Run from method attributes
                 .Concat(methodInfo.GetCustomAttributes())
                 .Where(a => a.GetType().Name == "SwaggerOperationProcessorAttribute");
 
             foreach (dynamic attribute in operationProcessorAttribute)
             {
                 var operationProcessor = Activator.CreateInstance(attribute.Type);
-                if (operationProcessor.Process(methodInfo, operationDescription, swaggerGenerator, allOperations) == false)
+                if (operationProcessor.Process(methodInfo, operationDescription, swaggerGenerator, allOperations) ==
+                    false)
                     return false;
             }
 
@@ -235,7 +250,8 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         {
             string operationId;
 
-            dynamic swaggerOperationAttribute = method.GetCustomAttributes().FirstOrDefault(a => a.GetType().Name == "SwaggerOperationAttribute");
+            dynamic swaggerOperationAttribute =
+                method.GetCustomAttributes().FirstOrDefault(a => a.GetType().Name == "SwaggerOperationAttribute");
             if (swaggerOperationAttribute != null && !string.IsNullOrEmpty(swaggerOperationAttribute.OperationId))
                 operationId = swaggerOperationAttribute.OperationId;
             else
@@ -251,7 +267,9 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
             }
 
             var number = 1;
-            while (document.Operations.Any(o => o.Operation.OperationId == operationId + (number > 1 ? "_" + number : string.Empty)))
+            while (
+                document.Operations.Any(
+                    o => o.Operation.OperationId == operationId + (number > 1 ? "_" + number : string.Empty)))
                 number++;
 
             return operationId + (number > 1 ? number.ToString() : string.Empty);
@@ -264,8 +282,10 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
             var routeAttributes = GetRouteAttributes(method.GetCustomAttributes()).ToList();
 
             // .NET Core: RouteAttribute on class level
-            dynamic routeAttributeOnClass = GetRouteAttributes(controllerType.GetTypeInfo().GetCustomAttributes()).SingleOrDefault();
-            dynamic routePrefixAttribute = GetRoutePrefixAttributes(controllerType.GetTypeInfo().GetCustomAttributes()).SingleOrDefault();
+            dynamic routeAttributeOnClass =
+                GetRouteAttributes(controllerType.GetTypeInfo().GetCustomAttributes()).SingleOrDefault();
+            dynamic routePrefixAttribute =
+                GetRoutePrefixAttributes(controllerType.GetTypeInfo().GetCustomAttributes()).SingleOrDefault();
 
             if (routeAttributes.Any())
             {
@@ -302,9 +322,10 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
                     if (controllerType.Namespace != null)
                     {
                         var namespacePathMatch = (new Regex(Settings.NameSpacePathRegex)).Match(controllerType.Namespace);
-                        namespacePathName = namespacePathMatch.Groups.Count > 0 ? namespacePathMatch.Groups["namespace"].Value : "";
+                        namespacePathName = namespacePathMatch.Groups.Count > 0
+                            ? namespacePathMatch.Groups["namespace"].Value
+                            : "";
                     }
-
                 }
 
                 var path = $"{namespacePathName}/{controllerPathName}/{actionPathName}";
@@ -329,20 +350,29 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
             for (int i = 0; i < segments.Length; i++)
             {
                 var segment = segments[i];
-                if (segment.EndsWith("?}"))
-                {
-                    foreach (var p in ExpandOptionalHttpPathParameters(string.Join("/", segments.Take(i).Concat(segments.Skip(i + 1))), method))
-                        yield return p;
+                if (!segment.EndsWith("?}")) continue;
+                foreach (
+                    var p in
+                    ExpandOptionalHttpPathParameters(
+                        string.Join("/", segments.Take(i).Concat(segments.Skip(i + 1))), method))
+                    yield return p;
 
-                    // Only expand if optional parameter is available in action method
-                    if (method.GetParameters().Any(p => segment.StartsWith("{" + p.Name + ":") || segment.StartsWith("{" + p.Name + "?")))
-                    {
-                        foreach (var p in ExpandOptionalHttpPathParameters(string.Join("/", segments.Take(i).Concat(new[] { segment.Replace("?", "") }).Concat(segments.Skip(i + 1))), method))
-                            yield return p;
-                    }
-
+                // Only expand if optional parameter is available in action method
+                if (!method.GetParameters()
+                    .Any(p => segment.StartsWith("{" + p.Name + ":") || segment.StartsWith("{" + p.Name + "?")))
                     yield break;
+                {
+                    foreach (
+                        var p in
+                        ExpandOptionalHttpPathParameters(
+                            string.Join("/",
+                                segments.Take(i)
+                                    .Concat(new[] {segment.Replace("?", "")})
+                                    .Concat(segments.Skip(i + 1))), method))
+                        yield return p;
                 }
+
+                yield break;
             }
             yield return path;
         }
@@ -350,16 +380,23 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         private IEnumerable<Attribute> GetRouteAttributes(IEnumerable<Attribute> attributes)
         {
             return attributes.Where(a => a.GetType().Name == Settings.RouteAttribute ||
-                                         a.GetType().GetTypeInfo().ImplementedInterfaces.Any(t => t.Name == "IHttpRouteInfoProvider") ||
-                                         a.GetType().GetTypeInfo().ImplementedInterfaces.Any(t => t.Name == "IRouteTemplateProvider")) // .NET Core
-                             .Where((dynamic a) => a.Template != null)
-                             .OfType<Attribute>();
+                                         a.GetType()
+                                             .GetTypeInfo()
+                                             .ImplementedInterfaces.Any(t => t.Name == "IHttpRouteInfoProvider") ||
+                                         a.GetType()
+                                             .GetTypeInfo()
+                                             .ImplementedInterfaces.Any(t => t.Name == "IRouteTemplateProvider"))
+                // .NET Core
+                .Where((dynamic a) => a.Template != null)
+                .OfType<Attribute>();
         }
 
         private IEnumerable<Attribute> GetRoutePrefixAttributes(IEnumerable<Attribute> attributes)
         {
             return attributes.Where(a => a.GetType().Name == "RoutePrefixAttribute" ||
-                                         a.GetType().GetTypeInfo().ImplementedInterfaces.Any(t => t.Name == "IRoutePrefix"));
+                                         a.GetType()
+                                             .GetTypeInfo()
+                                             .ImplementedInterfaces.Any(t => t.Name == "IRoutePrefix"));
         }
 
         private string GetActionName(MethodInfo method)
@@ -387,72 +424,103 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
             }
         }
 
-        private SwaggerOperationMethod GetVerbFromVerbAttribute(dynamic verbAttribute)
-        {
 
-            return SwaggerOperationMethod.Post;
-        }
 
         private IEnumerable<SwaggerOperationMethod> GetSupportedHttpMethodsFromAttributes(MethodInfo method)
         {
             // 从自定义的VerbAttribute获取method
-            if (!string.IsNullOrEmpty(Settings.VerbAttribute))
+            if (string.IsNullOrEmpty(Settings.VerbAttribute))
             {
-                var classNameSplits = Settings.VerbAttribute.Split('.');
-                var className = classNameSplits.Length > 1 ? classNameSplits[0] : Settings.VerbAttribute;
-                if (method.GetCustomAttributes().Any(a => a.GetType().Name == className))
-                {
-                    var attr = method.GetCustomAttributes().First(a => a.GetType().Name == Settings.VerbAttribute);
-                    yield return
-                        GetVerbFromVerbAttribute(attr);
-                }
-            }
-
-
-            if (method.GetCustomAttributes().Any(a => a.GetType().Name == "HttpGetAttribute"))
-                yield return SwaggerOperationMethod.Get;
-
-            if (method.GetCustomAttributes().Any(a => a.GetType().Name == "HttpPostAttribute"))
                 yield return SwaggerOperationMethod.Post;
+            }
 
-            if (method.GetCustomAttributes().Any(a => a.GetType().Name == "HttpPutAttribute"))
-                yield return SwaggerOperationMethod.Put;
-
-            if (method.GetCustomAttributes().Any(a => a.GetType().Name == "HttpDeleteAttribute"))
-                yield return SwaggerOperationMethod.Delete;
-
-            if (method.GetCustomAttributes().Any(a => a.GetType().Name == "HttpOptionsAttribute"))
-                yield return SwaggerOperationMethod.Options;
-
-            if (method.GetCustomAttributes().Any(a => a.GetType().Name == "HttpPatchAttribute"))
-                yield return SwaggerOperationMethod.Patch;
-
-            if (method.GetCustomAttributes().Any(a => a.GetType().Name == "HttpHeadAttribute"))
-                yield return SwaggerOperationMethod.Head;
-
-            dynamic acceptVerbsAttribute = method.GetCustomAttributes()
-                .SingleOrDefault(a => a.GetType().Name == "AcceptVerbsAttribute");
-
-            if (acceptVerbsAttribute != null)
+            var classNameSplits = Settings.VerbAttribute.Split('.');
+            var className = "";
+            var prop = "";
+            if (classNameSplits.Length > 1)
             {
-                foreach (var verb in ((ICollection)acceptVerbsAttribute.HttpMethods).OfType<object>().Select(v => v.ToString().ToLowerInvariant()))
+                className = classNameSplits[0];
+                prop = classNameSplits[1];
+            }
+            else
+            {
+                className = Settings.VerbAttribute;
+            }
+
+            var verbAttr =
+                method.GetCustomAttributes().FirstOrDefault(o => o.GetType().Name == className);
+
+            var verb = "post";
+            if (verbAttr != null)
+            {
+                if (!string.IsNullOrEmpty(prop))
                 {
-                    if (verb == "get")
-                        yield return SwaggerOperationMethod.Get;
-                    else if (verb == "post")
-                        yield return SwaggerOperationMethod.Post;
-                    else if (verb == "put")
-                        yield return SwaggerOperationMethod.Put;
-                    else if (verb == "delete")
-                        yield return SwaggerOperationMethod.Delete;
-                    else if (verb == "options")
-                        yield return SwaggerOperationMethod.Options;
-                    else if (verb == "head")
-                        yield return SwaggerOperationMethod.Head;
-                    else if (verb == "patch")
-                        yield return SwaggerOperationMethod.Patch;
+                    var a = (dynamic) verbAttr;
+                    if (a.GetType().GetProperty(prop) == null)
+                    {
+                        throw new Exception($"类{className}不存在该属性{prop}");
+                    }
+                    verb = a.GetType().GetProperty(prop).GetValue(a, null);
                 }
             }
+            else
+            {
+                //根据类名提取verb
+                var reg =
+                    new Regex(@"[a-zA-Z]*(?<verb>(get)|(post)|(put)|(delete)|(patch)|(head)|(options))[a-zA-Z]*");
+                var match = reg.Match(className.ToLower());
+                if (match.Success && match.Groups.Count > 0)
+                {
+                    verb = match.Groups["verb"].Value;
+                }
+
+            }
+            switch (verb)
+            {
+                case "get":
+                {
+                    yield return SwaggerOperationMethod.Get;
+                    break;
+                }
+                case "post":
+                {
+                    yield return SwaggerOperationMethod.Post;
+                    break;
+                }
+                case "put":
+                {
+                    yield return SwaggerOperationMethod.Put;
+                    break;
+                }
+                case "delete":
+                {
+                    yield return SwaggerOperationMethod.Delete;
+                    break;
+                }
+                case "patch":
+                {
+                    yield return SwaggerOperationMethod.Patch;
+                    break;
+                }
+                case "head":
+                {
+                    yield return SwaggerOperationMethod.Head;
+                    break;
+                }
+                case "options":
+                {
+                    yield return SwaggerOperationMethod.Options;
+                    break;
+                }
+                default:
+                {
+                    yield return SwaggerOperationMethod.Post;
+                    break;
+                }
+            }
+
+
         }
+
     }
 }
