@@ -12,9 +12,9 @@ namespace SwaggerSharp
     {
         public static void Main(string[] args)
         {
-            //var jsonStr = LoadFromAssembly();
-            //Console.Write(jsonStr);
-            //return;
+            var jsonStr = LoadFromAssembly();
+            Console.Write(jsonStr);
+            return;
             /*
             1. 如果controller类有指定的属性，则忽略该controller.通过SwaggerIgnoreAttribute配置
             2. 如果action有指定的属性，则忽略该action. 通过SwaggerIgnoreAttribute配置
@@ -40,7 +40,7 @@ namespace SwaggerSharp
         {
             var settings = new AssemblyTypeToSwaggerGeneratorSettings();
             // dll路径
-            settings.AssemblyPaths = new[]{ "/Users/huwl/RiderProjects/SwaggerSharp/bin/Debug/SwaggerSharp.Examples.dll"};
+            settings.AssemblyPaths = new[]{ "/home/koolay/sharp/SwaggerSharp/bin/Debug/SwaggerSharp.Examples.dll"};
             // controller所在dll
             settings.InheritFrom = "SwaggerSharp.Examples.ControllerBase, SwaggerSharp.Examples.dll";
             // 设置类的后缀
@@ -90,9 +90,6 @@ namespace SwaggerSharp
             }
 
             var generator = new WebApiToSwaggerGenerator(settings.ApiSetting);
-
-            //GenerateForControllers(new[] {typeof(TController)});
-
             var doc = generator.GenerateForControllers(controllers);
             return doc.ToJson();
 

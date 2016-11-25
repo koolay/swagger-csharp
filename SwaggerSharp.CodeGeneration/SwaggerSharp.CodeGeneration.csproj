@@ -40,9 +40,6 @@
     <Reference Include="NJsonSchema, Version=5.19.6171.28316, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102">
       <HintPath>..\packages\NJsonSchema.5.19.6171.28316\lib\net45\NJsonSchema.dll</HintPath>
     </Reference>
-    <Reference Include="NJsonSchema.CodeGeneration, Version=5.19.6171.28316, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102">
-      <HintPath>..\packages\NJsonSchema.CodeGeneration.5.19.6171.28316\lib\portable45-net45+win8+wp8+wpa81\NJsonSchema.CodeGeneration.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -73,9 +70,6 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\SwaggerSharp.Core\SwaggerSharp.Core.csproj">
       <Project>{CCC3B9DF-EA3C-4B0C-A10C-3521586ADBF8}</Project>
       <Name>SwaggerSharp.Core</Name>
@@ -83,6 +77,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="SwaggerGenerators" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
