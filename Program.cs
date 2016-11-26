@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -14,14 +15,14 @@ namespace SwaggerSharp
     internal class Options
     {
         [Option('a', "assembly", Required = false,
-             HelpText = "Input files to be processed.")]
+             HelpText = @"程序集dll完整路径.如:c:\assembly\App.Controllers.dll")]
         public IEnumerable<string> Assembly { get; set; }
 
         [Option('c', "controller", Required = false,
-             HelpText = "Content language.")]
+             HelpText = @"控制器controller名称.如:App.Controllers.ProjectController, App.Controllers.dll")]
         public IEnumerable<string> Controllers { get; set; }
 
-        [Option('i', "inherit", Required = true, HelpText = "Controller父类, 如:SwaggerSharp.Examples.ControllerBase, SwaggerSharp.Examples.dll")]
+        [Option('i', "inherit", Required = false, HelpText = @"Controller父类, 如:SwaggerSharp.Examples.ControllerBase, SwaggerSharp.Examples.dll")]
         public string InheritFrom { get; set; }
 
         // Omitting long name, default --verbose
@@ -57,7 +58,7 @@ namespace SwaggerSharp
     internal class AssemblyConfig
     {
 
-        public string ControllerSuffix { get; set; } = "Controller";
+        public string ControllerSuffix { get; set; }// = "Controller";
 
         // Controller父类, 如: SwaggerSharp.Examples.ControllerBase, SwaggerSharp.Examples.dll
         public string InheritFrom { get; set; }
@@ -75,17 +76,27 @@ namespace SwaggerSharp
             {
                 var controllers = new List<Type>();
                 var opts = result.Value;
+                if (!opts.Assembly.Any() && !opts.Controllers.Any())
+                {
+                    Console.WriteLine("至少请指定一个程序集或者控制器类");
+                    return;
+                }
 
                 if (opts.Assembly != null && opts.Assembly.Any())
                 {
                     foreach (var path in opts.Assembly)
                     {
-                        controllers.AddRange(LoadControllersFromAssembly(path, GetAssemblyConfig()));
+                        var assemblyConfig = GetAssemblyConfig();
+                        if (string.IsNullOrEmpty(assemblyConfig.InheritFrom))
+                            assemblyConfig.InheritFrom = opts.InheritFrom;
+
+                        controllers.AddRange(LoadControllersFromAssembly(path, assemblyConfig));
                     }
                 }
+
                 if (opts.Controllers != null && opts.Controllers.Any())
                 {
-                    controllers.Add(Type.GetType(opts.InheritFrom));
+                    controllers.AddRange(opts.Controllers.Select(c=> { return Type.GetType(c);}));
                 }
 
                 swaggerJson = ExportController(controllers, GetAPIConfig());
