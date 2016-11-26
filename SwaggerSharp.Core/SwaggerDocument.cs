@@ -156,7 +156,8 @@ namespace SwaggerSharp.Core
 
             JsonSchemaReferenceUtilities.UpdateSchemaReferencePaths(this, new SwaggerDocumentSchemaDefinitionAppender(this, typeNameGenerator));
             var data = JsonConvert.SerializeObject(this, settings);
-            JsonSchemaReferenceUtilities.UpdateSchemaReferences(this);
+            // 不使用引用类型
+            // JsonSchemaReferenceUtilities.UpdateSchemaReferences(this);
 
             return JsonSchemaReferenceUtilities.ConvertPropertyReferences(data);
         }
@@ -175,7 +176,8 @@ namespace SwaggerSharp.Core
                 PreserveReferencesHandling = PreserveReferencesHandling.Objects
             });
             service.DocumentPath = documentPath;
-            JsonSchemaReferenceUtilities.UpdateSchemaReferences(service);
+            // 不使用引用类型
+            // JsonSchemaReferenceUtilities.UpdateSchemaReferences(service);
             return service;
         }
 

@@ -34,7 +34,7 @@ namespace SwaggerSharp.Examples
         /// <param name="id">产品id</param>
         /// <returns></returns>
         [ActionVerb(Verb = "delete")]
-        public bool Delete(string id)
+        public bool Delete(string id = "aaa")
         {
             return true;
         }

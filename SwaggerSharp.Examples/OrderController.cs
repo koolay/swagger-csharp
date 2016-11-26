@@ -11,7 +11,7 @@ namespace SwaggerSharp.Examples
         /// </summary>
         /// <param name="orderId">订单id</param>
         /// <returns></returns>
-        [ActionVerb(Verb = "1231")]
+        [ActionVerb(Verb = "get")]
         public OrderDto GetOrderDetail(string orderId)
         {
             return new OrderDto

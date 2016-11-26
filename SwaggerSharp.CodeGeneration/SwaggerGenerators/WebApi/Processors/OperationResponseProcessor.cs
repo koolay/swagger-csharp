@@ -85,7 +85,8 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
                     if (IsVoidResponse(returnType) == false)
                     {
                         response.IsNullableRaw = typeDescription.IsNullable;
-                        response.Schema = context.SwaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null);
+                        var schema = context.SwaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null);
+                        response.Schema = schema.SchemaReference == null ? schema :schema.SchemaReference.ActualSchema;
                     }
 
                     context.OperationDescription.Operation.Responses[httpStatusCode] = response;
@@ -105,7 +106,8 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
                     if (IsVoidResponse(returnType) == false)
                     {
                         response.IsNullableRaw = typeDescription.IsNullable;
-                        response.Schema = context.SwaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null);
+                        var schema = context.SwaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null);
+                        response.Schema = schema.SchemaReference == null ? schema :schema.SchemaReference.ActualSchema;
                     }
 
                     context.OperationDescription.Operation.Responses[httpStatusCode] = response;
@@ -136,12 +138,13 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
             {
                 var typeDescription = JsonObjectTypeDescription.FromType(returnType, 
                     methodInfo.ReturnParameter?.GetCustomAttributes(), _settings.DefaultEnumHandling);
-
+                var schema = swaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable,
+                    null);
                 operation.Responses["200"] = new SwaggerResponse
                 {
                     Description = responseDescription,
                     IsNullableRaw = typeDescription.IsNullable,
-                    Schema = swaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null)
+                    Schema = schema.SchemaReference == null ? schema :schema.SchemaReference.ActualSchema
                 };
             }
         }

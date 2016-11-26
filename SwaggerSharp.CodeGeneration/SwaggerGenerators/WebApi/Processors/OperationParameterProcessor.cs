@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using NJsonSchema;
@@ -58,6 +59,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
                     var parameterInfo = JsonObjectTypeDescription.FromType(parameter.ParameterType, parameter.GetCustomAttributes(), _settings.DefaultEnumHandling);
                     if (TryAddFileParameter(parameterInfo, context.OperationDescription.Operation, parameter, context.SwaggerGenerator) == false)
                     {
+
                         dynamic fromBodyAttribute = parameter.GetCustomAttributes()
                             .SingleOrDefault(a => a.GetType().Name == "FromBodyAttribute");
 
@@ -67,19 +69,57 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
                         var bodyParameterName = TryGetStringPropertyValue(fromBodyAttribute, "Name") ?? parameter.Name;
                         var uriParameterName = TryGetStringPropertyValue(fromUriAttribute, "Name") ?? parameter.Name;
 
-                        if (parameterInfo.IsComplexType)
+                        if (fromBodyAttribute != null)
                         {
-                            if (fromBodyAttribute != null || (fromUriAttribute == null && _settings.IsAspNetCore == false))
-                                AddBodyParameter(bodyParameterName, parameter, context.OperationDescription.Operation, context.SwaggerGenerator);
+                            if (parameterInfo.IsComplexType)
+                            {
+                                AddBodyParameter(bodyParameterName, parameter, context.OperationDescription.Operation,
+                                    context.SwaggerGenerator);
+                            }
                             else
-                                AddPrimitiveParametersFromUri(uriParameterName, context.OperationDescription.Operation, parameter, parameterInfo, context.SwaggerGenerator);
+                            {
+                                AddPrimitiveParametersFromUri(uriParameterName, context.OperationDescription.Operation, parameter, context.SwaggerGenerator);
+                            }
+                        }
+                        else if (fromUriAttribute != null && _settings.IsAspNetCore == false)
+                        {
+                            if (!parameterInfo.IsComplexType)
+                                AddPrimitiveParameter(uriParameterName, context.OperationDescription.Operation,
+                                    parameter, context.SwaggerGenerator);
+                            else
+                                AddBodyParameter(bodyParameterName, parameter, context.OperationDescription.Operation,
+                                    context.SwaggerGenerator);
                         }
                         else
                         {
-                            if (fromBodyAttribute != null)
-                                AddBodyParameter(bodyParameterName, parameter, context.OperationDescription.Operation, context.SwaggerGenerator);
-                            else
-                                AddPrimitiveParameter(uriParameterName, context.OperationDescription.Operation, parameter, context.SwaggerGenerator);
+                            var parameterName = parameter.Name;
+                            switch (context.OperationDescription.Method)
+                            {
+                                case SwaggerOperationMethod.Put:
+                                case SwaggerOperationMethod.Patch:
+                                case SwaggerOperationMethod.Post:
+                                {
+                                    if (!parameterInfo.IsComplexType)
+                                        AddFormDataParameter(parameterName, parameter,
+                                            context.OperationDescription.Operation, context.SwaggerGenerator);
+                                    else
+                                        AddBodyParameter(parameterName, parameter,
+                                            context.OperationDescription.Operation, context.SwaggerGenerator);
+                                    break;
+                                }
+                                default:
+                                {
+                                    if (!parameterInfo.IsComplexType)
+                                        AddPrimitiveParametersFromUri(parameterName, context.OperationDescription.Operation,
+                                            parameter, context.SwaggerGenerator);
+                                    else
+                                        AddBodyParameter(parameterName, parameter,
+                                            context.OperationDescription.Operation, context.SwaggerGenerator);
+                                    break;
+                                }
+
+
+                            }
                         }
                     }
                 }
@@ -167,39 +207,18 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
             operation.Parameters.Add(operationParameter);
         }
 
-        private void AddPrimitiveParametersFromUri(string name, SwaggerOperation operation, ParameterInfo parameter, JsonObjectTypeDescription typeDescription, SwaggerGenerator swaggerGenerator)
+        private void AddFormDataParameter(string name, ParameterInfo parameter, SwaggerOperation operation,
+            SwaggerGenerator swaggerGenerator)
         {
-            if (typeDescription.Type.HasFlag(JsonObjectType.Array))
-            {
-                var operationParameter = swaggerGenerator.CreatePrimitiveParameter(name,
-                    parameter.GetXmlDocumentation(), parameter.ParameterType.GetEnumerableItemType(), parameter.GetCustomAttributes().ToList());
+            var operationParameter = swaggerGenerator.CreatePrimitiveFormParameter(name, parameter);
+            operation.Parameters.Add(operationParameter);
+        }
 
-                operationParameter.Kind = SwaggerParameterKind.Query;
-                operationParameter.CollectionFormat = SwaggerParameterCollectionFormat.Multi;
-                operation.Parameters.Add(operationParameter);
-            }
-            else
-            {
-                foreach (var property in parameter.ParameterType.GetRuntimeProperties())
-                {
-                    var attributes = property.GetCustomAttributes().ToList();
-                    var fromQueryAttribute = attributes.SingleOrDefault(a => a.GetType().Name == "FromQueryAttribute");
 
-                    var propertyName = TryGetStringPropertyValue(fromQueryAttribute, "Name") ?? JsonPathUtilities.GetPropertyName(property, _settings.DefaultPropertyNameHandling);
-                    var operationParameter = swaggerGenerator.CreatePrimitiveParameter(propertyName, property.GetXmlSummary(), property.PropertyType, attributes);
-
-                    // TODO: Check if required can be controlled with mechanisms other than RequiredAttribute
-
-                    var parameterInfo = JsonObjectTypeDescription.FromType(property.PropertyType, attributes, _settings.DefaultEnumHandling);
-                    var isFileArray = IsFileArray(property.PropertyType, parameterInfo);
-                    if (parameterInfo.Type == JsonObjectType.File || isFileArray)
-                        InitializeFileParameter(operationParameter, isFileArray);
-                    else
-                        operationParameter.Kind = SwaggerParameterKind.Query;
-
-                    operation.Parameters.Add(operationParameter);
-                }
-            }
+        private void AddPrimitiveParametersFromUri(string name, SwaggerOperation operation, ParameterInfo parameter, SwaggerGenerator swaggerGenerator)
+        {
+            var operationParameter = swaggerGenerator.CreatePrimitiveFroUri(name, parameter);
+            operation.Parameters.Add(operationParameter);
         }
 
         private void AddPrimitiveParameter(string name, SwaggerOperation operation, ParameterInfo parameter, SwaggerGenerator swaggerGenerator)

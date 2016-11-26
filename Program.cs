@@ -12,9 +12,9 @@ namespace SwaggerSharp
     {
         public static void Main(string[] args)
         {
-            var jsonStr = LoadFromAssembly();
-            Console.Write(jsonStr);
-            return;
+            //var jsonStr = LoadFromAssembly();
+            //Console.Write(jsonStr);
+            //return;
             /*
             1. 如果controller类有指定的属性，则忽略该controller.通过SwaggerIgnoreAttribute配置
             2. 如果action有指定的属性，则忽略该action. 通过SwaggerIgnoreAttribute配置
@@ -26,7 +26,8 @@ namespace SwaggerSharp
                 ControllerPathRegex = @"(?<controller>[^\s]+)Controller$",
                 NameSpacePathRegex = @"\.?(?<namespace>[^\s\.]+)$",
                 SwaggerIgnoreAttribute = "ForbidHttpAttribute",
-                VerbAttribute = "ActionVerbAttribute.Verb"
+                VerbAttribute = "ActionVerbAttribute.Verb",
+                RequiredParemeterAttribute = "RequiredAttribute"
             };
 
             var generator = new WebApiToSwaggerGenerator(settings);
@@ -40,7 +41,7 @@ namespace SwaggerSharp
         {
             var settings = new AssemblyTypeToSwaggerGeneratorSettings();
             // dll路径
-            settings.AssemblyPaths = new[]{ "/home/koolay/sharp/SwaggerSharp/bin/Debug/SwaggerSharp.Examples.dll"};
+            settings.AssemblyPaths = new[]{ "/Users/huwl/RiderProjects/swagger-csharp/bin/Debug/SwaggerSharp.Examples.dll"};
             // controller所在dll
             settings.InheritFrom = "SwaggerSharp.Examples.ControllerBase, SwaggerSharp.Examples.dll";
             // 设置类的后缀
@@ -48,11 +49,18 @@ namespace SwaggerSharp
 
             settings.ApiSetting = new WebApiToSwaggerGeneratorSettings
             {
+                // action方法名提取
                 ActionPathRegex = @"(?<action>[^\s]+)$",
+                // 控制器类名提取
                 ControllerPathRegex = @"(?<controller>[^\s]+)Controller$",
+                // 命名空间提取到module
                 NameSpacePathRegex = @"\.?(?<namespace>[^\s\.]+)$",
+                // 解析时是否忽略
                 SwaggerIgnoreAttribute = "ForbidHttpAttribute",
-                VerbAttribute = "ActionVerbAttribute.Verb"
+                // verb属性: post,get,put等
+                VerbAttribute = "ActionVerbAttribute.Verb",
+                // 根据此参数的属性是否存在, 值判断参数是否可选
+                RequiredParemeterAttribute = "RequiredAttribute"
 
             };
 
@@ -78,12 +86,12 @@ namespace SwaggerSharp
 
                 if (classNameIsOk && classTypeIsOk)
                 {
-                    Console.WriteLine($"controller: {type.FullName}:");
+                    // Console.WriteLine($"controller: {type.FullName}:");
                     controllers.Add(type);
                 }
                 else
                 {
-                    Console.WriteLine(type.FullName);
+                    // Console.WriteLine(type.FullName);
                 }
 
 

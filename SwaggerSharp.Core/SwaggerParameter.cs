@@ -25,8 +25,8 @@ namespace NSwag
         public SwaggerParameterKind Kind { get; set; }
 
         /// <summary>Gets or sets a value indicating whether the parameter is required (default: false).</summary>
-        [JsonProperty(PropertyName = "required", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public bool IsRequired { get; set; } = false;
+        [JsonProperty(PropertyName = "required", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool IsRequired { get; set; } = true;
 
         /// <summary>Gets or sets the schema which is only available when <see cref="Kind"/> == body.</summary>
         [JsonProperty(PropertyName = "schema", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]

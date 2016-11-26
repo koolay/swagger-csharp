@@ -94,8 +94,11 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
                 Settings.TypeNameGenerator);
 
             foreach (var controllerType in controllerTypes)
+            {
                 GenerateForController(document, controllerType,
                     new SwaggerGenerator(_schemaGenerator, Settings, schemaResolver, schemaDefinitionAppender));
+            }
+
 
             AppendRequiredSchemasToDefinitions(document, schemaResolver);
             document.GenerateOperationIds();

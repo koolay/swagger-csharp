@@ -36,6 +36,10 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         /// </summary>
         public string RouteAttribute { get; set; } = "RouteAttribute";
 
+        /// <summary>
+        /// 根据此参数的属性是否存在, 值判断参数是否可选
+        /// </summary>
+        public string RequiredParemeterAttribute { get; set; } = "RequiredAttribute";
 
         /// <summary>
         /// verb属性
