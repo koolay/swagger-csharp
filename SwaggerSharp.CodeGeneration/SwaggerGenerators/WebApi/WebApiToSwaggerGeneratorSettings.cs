@@ -46,6 +46,9 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
         /// </summary>
         public string VerbAttribute { get; set; } = "Action.Verb";
 
+        // 读取属性注释
+        public string SummaryAttribute { get; set; } = "DescriptionAttribute.Description";
+
         /// <summary>
         /// 路由前缀属性提取
         /// </summary>

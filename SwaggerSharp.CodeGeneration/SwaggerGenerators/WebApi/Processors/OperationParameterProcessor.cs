@@ -36,7 +36,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
         /// <summary>Processes the specified method information.</summary>
         /// <param name="context"></param>
         /// <returns>true if the operation should be added to the Swagger specification.</returns>
-        public bool Process(OperationProcessorContext context)
+        public bool Process(OperationProcessorContext context, WebApiToSwaggerGeneratorSettings setting)
         {
             var httpPath = context.OperationDescription.Path;
             var parameters = context.MethodInfo.GetParameters().ToList();
@@ -225,5 +225,6 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
         {
             return ((object)obj)?.GetType().GetRuntimeProperty(propertyName) != null && !string.IsNullOrEmpty(obj.Name) ? obj.Name : null;
         }
+
     }
 }

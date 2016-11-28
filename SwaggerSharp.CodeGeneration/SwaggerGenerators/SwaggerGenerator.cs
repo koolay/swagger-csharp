@@ -104,7 +104,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
                     Schema = new JsonSchema4
                     {
                         SchemaReference = _schemaGenerator.Generate<JsonSchema4>(parameterType, parentAttributes, SchemaResolver, SchemaDefinitionAppender)
-                    }
+                    },
                 };
             }
             else

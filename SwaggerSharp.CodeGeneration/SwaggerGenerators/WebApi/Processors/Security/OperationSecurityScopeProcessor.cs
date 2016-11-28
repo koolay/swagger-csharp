@@ -29,7 +29,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors.Securi
         /// <summary>Processes the specified method information.</summary>
         /// <param name="context"></param>
         /// <returns>true if the operation should be added to the Swagger specification.</returns>
-        public bool Process(OperationProcessorContext context)
+        public bool Process(OperationProcessorContext context, WebApiToSwaggerGeneratorSettings setting)
         {
             if (context.OperationDescription.Operation.Security == null)
                 context.OperationDescription.Operation.Security = new List<SwaggerSecurityRequirement>();

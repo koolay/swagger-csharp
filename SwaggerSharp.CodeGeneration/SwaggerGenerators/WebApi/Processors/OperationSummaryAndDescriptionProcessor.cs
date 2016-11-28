@@ -6,6 +6,7 @@
 // <author>Rico Suter, mail@rsuter.com</author>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Linq;
 using System.Reflection;
 using NJsonSchema.Infrastructure;
@@ -18,14 +19,39 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
     {
         /// <summary>Processes the specified method information.</summary>
         /// <param name="context"></param>
+        /// <param name="setting"></param>
         /// <returns>true if the operation should be added to the Swagger specification.</returns>
-        public bool Process(OperationProcessorContext context)
+        public bool Process(OperationProcessorContext context, WebApiToSwaggerGeneratorSettings setting)
         {
+            var summaryAttrSplits = setting.SummaryAttribute.Split('.');
+            var attrName = "";
+            var prop = "";
+            if (summaryAttrSplits.Length > 1)
+            {
+                attrName = summaryAttrSplits[0];
+                prop = summaryAttrSplits[1];
+            }
+            else
+            {
+                attrName = setting.SummaryAttribute;
+            }
+
             dynamic descriptionAttribute = context.MethodInfo.GetCustomAttributes()
-                .SingleOrDefault(a => a.GetType().Name == "DescriptionAttribute");
+                .SingleOrDefault(a => a.GetType().Name == attrName);
 
             if (descriptionAttribute != null)
-                context.OperationDescription.Operation.Summary = descriptionAttribute.Description;
+            {
+                if (!string.IsNullOrEmpty(prop))
+                {
+
+                    if (descriptionAttribute.GetType().GetProperty(prop) == null)
+                    {
+                        throw new Exception($"类{attrName}不存在该属性{prop}");
+                    }
+                    context.OperationDescription.Operation.Summary = descriptionAttribute.GetType().GetProperty(prop).GetValue(descriptionAttribute, null);
+                }
+
+            }
             else
             {
                 var summary = context.MethodInfo.GetXmlSummary();

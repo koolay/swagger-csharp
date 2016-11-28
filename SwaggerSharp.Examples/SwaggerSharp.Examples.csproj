@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="ActionVerbAttribute.cs" />
     <Compile Include="ControllerBase.cs" />
+    <Compile Include="DescriptionAttribute.cs" />
     <Compile Include="ForbidHttpAttribute.cs" />
     <Compile Include="OrderController.cs" />
     <Compile Include="OrderDto.cs" />

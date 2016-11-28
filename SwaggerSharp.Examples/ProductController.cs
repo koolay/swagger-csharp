@@ -12,17 +12,19 @@ namespace SwaggerSharp.Examples
         /// <param name="product">产品信息</param>
         /// <returns></returns>
         [ActionVerb(Verb = "post")]
+        [DescriptionAttribute("新增产品")]
         public Guid AddProduct(ProductDto product)
         {
             return Guid.NewGuid();
         }
 
         /// <summary>
-        /// 新增产品
+        /// 修改产品
         /// </summary>
         /// <param name="product">产品信息</param>
         /// <returns></returns>
         [ActionVerb(Verb = "put")]
+        [DescriptionAttribute("修改产品")]
         public ProductDto ModifyProduct(ProductDto product)
         {
             return new ProductDto();

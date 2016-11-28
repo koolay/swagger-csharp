@@ -198,7 +198,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi
             {
                 if (
                     operationProcessor.Process(new OperationProcessorContext(document, operationDescription, methodInfo,
-                        swaggerGenerator, allOperations)) == false)
+                        swaggerGenerator, allOperations), Settings) == false)
                     return false;
             }
 

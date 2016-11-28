@@ -62,6 +62,9 @@ namespace SwaggerSharp
         // verb属性: post,get,put等
         public string VerbAttribute { get; set; } = "ActionVerbAttribute.Verb";
 
+        // 读取属性注释
+        public string SummaryAttribute { get; set; } = "DescriptionAttribute.Description";
+
         // 根据此参数的属性是否存在, 值判断参数是否可选
         public string RequiredParemeterAttribute { get; set; } = "RequiredAttribute";
 
