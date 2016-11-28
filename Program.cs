@@ -28,9 +28,14 @@ namespace SwaggerSharp
              HelpText = @"输出位置, 如:c:\s.json; stdout; http://myapp.com/api")]
         public IEnumerable<string> Output { get; set; } = new [] {"stdout"};
 
+        [Option('n', "name", Required = true, HelpText = @"swagger项目名称")]
+        public string Name { get; set; }
+
+
         [Option('H', "header", Required = false,
              HelpText = @"输出为api时调用api请求的header, 如:x-ticket=xxxx")]
         public IEnumerable<string> Header { get; set; }
+
 
 
         // Omitting long name, default --verbose
@@ -106,7 +111,7 @@ namespace SwaggerSharp
                     controllers.AddRange(opts.Controllers.Select(c => { return Type.GetType(c); }));
                 }
 
-                swaggerJson = ExportController(controllers, GetAPIConfig());
+                swaggerJson = ExportController(controllers, GetAPIConfig(), opts.Name);
                 foreach (var outPutStr in opts.Output)
                 {
                     IOutputer outPuter;
@@ -155,13 +160,13 @@ namespace SwaggerSharp
         }
 
 
-        public static string ExportController(IEnumerable<Type> controllers, APIConfig config)
+        public static string ExportController(IEnumerable<Type> controllers, APIConfig config, string swaggerTitle)
         {
             var settings = new AssemblyTypeToSwaggerGeneratorSettings();
             // dll路径
-
             settings.ApiSetting = new WebApiToSwaggerGeneratorSettings
             {
+                Title = swaggerTitle,
                 // action方法名提取
                 ActionPathRegex = config.ActionPathRegex,
                 // 控制器类名提取

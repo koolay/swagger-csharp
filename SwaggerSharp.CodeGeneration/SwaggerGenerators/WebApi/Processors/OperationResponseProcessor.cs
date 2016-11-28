@@ -19,6 +19,7 @@ using SwaggerSharp.Core;
 
 namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
 {
+
     /// <summary>Generates the operation's response objects based on reflection and the ResponseTypeAttribute, SwaggerResponseAttribute and ProducesResponseTypeAttribute attributes.</summary>
     public class OperationResponseProcessor : IOperationProcessor
     {
@@ -85,8 +86,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
                     if (IsVoidResponse(returnType) == false)
                     {
                         response.IsNullableRaw = typeDescription.IsNullable;
-                        var schema = context.SwaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null);
-                        response.Schema = schema.SchemaReference == null ? schema :schema.SchemaReference.ActualSchema;
+                        response.Schema = context.SwaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null);
                     }
 
                     context.OperationDescription.Operation.Responses[httpStatusCode] = response;
@@ -106,8 +106,7 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
                     if (IsVoidResponse(returnType) == false)
                     {
                         response.IsNullableRaw = typeDescription.IsNullable;
-                        var schema = context.SwaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null);
-                        response.Schema = schema.SchemaReference == null ? schema :schema.SchemaReference.ActualSchema;
+                        response.Schema = context.SwaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null);
                     }
 
                     context.OperationDescription.Operation.Responses[httpStatusCode] = response;
@@ -138,13 +137,12 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
             {
                 var typeDescription = JsonObjectTypeDescription.FromType(returnType, 
                     methodInfo.ReturnParameter?.GetCustomAttributes(), _settings.DefaultEnumHandling);
-                var schema = swaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable,
-                    null);
+
                 operation.Responses["200"] = new SwaggerResponse
                 {
                     Description = responseDescription,
                     IsNullableRaw = typeDescription.IsNullable,
-                    Schema = schema.SchemaReference == null ? schema :schema.SchemaReference.ActualSchema
+                    Schema = swaggerGenerator.GenerateAndAppendSchemaFromType(returnType, typeDescription.IsNullable, null)
                 };
             }
         }

@@ -9,13 +9,20 @@
 
 ```
 
-swaggerSharp.exe -c "SwaggerSharp.Examples.ProductController, SwaggerSharp.Examples.dll" -o stdout
+swaggerSharp.exe -c "SwaggerSharp.Examples.ProductController, SwaggerSharp.Examples.dll" -o stdout -n mySwagger
 
 ```
 
 参数说明:
 
 > `-c`: 指定控制器的类型, 并指定程序集dll文件名
+> `-o`: 输出到控制台(stdout), 或者json文件(c:\myswagger.json),或者api(http://myapp.com/api)
+> `-n`: swagger名称
+
+> **NOTE:** 可以指定多个dll名称, 多个输出．例如: -o stdout c:\myswagger.json,同时输出到终端和json文件． 
+
+> 如果输出到api,则可以通过-H 参数指定headers, 例如 -o http://myapp.com/api -H Authorization=xxxx
+
 
 - 指定程序集
 

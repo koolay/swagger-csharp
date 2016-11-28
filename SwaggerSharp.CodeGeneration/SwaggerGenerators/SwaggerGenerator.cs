@@ -19,18 +19,19 @@ using SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi;
 
 namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
 {
+
     /// <summary>Provides services to for Swagger generators like the creation of parameters and handling of schemas.</summary>
     public class SwaggerGenerator
     {
         private readonly JsonSchemaGenerator _schemaGenerator;
-        private readonly WebApiToSwaggerGeneratorSettings _settings;
+        private readonly JsonSchemaGeneratorSettings _settings;
 
         /// <summary>Initializes a new instance of the <see cref="SwaggerGenerator"/> class.</summary>
         /// <param name="schemaGenerator">The schema generator.</param>
         /// <param name="schemaGeneratorSettings">The schema generator settings.</param>
         /// <param name="schemaResolver">The schema resolver.</param>
         /// <param name="schemaDefinitionAppender">The schema definition appender.</param>
-        public SwaggerGenerator(JsonSchemaGenerator schemaGenerator, WebApiToSwaggerGeneratorSettings schemaGeneratorSettings,
+        public SwaggerGenerator(JsonSchemaGenerator schemaGenerator, JsonSchemaGeneratorSettings schemaGeneratorSettings, 
             ISchemaResolver schemaResolver, ISchemaDefinitionAppender schemaDefinitionAppender)
         {
             SchemaResolver = schemaResolver;
@@ -115,52 +116,9 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
             }
 
             operationParameter.Name = name;
-            operationParameter.IsRequired = parentAttributes?.Any(a => a.GetType().Name == this._settings.RequiredParemeterAttribute) ?? false;
+            operationParameter.IsRequired = parentAttributes?.Any(a => a.GetType().Name == "RequiredAttribute") ?? false;
             operationParameter.IsNullableRaw = typeDescription.IsNullable;
 
-            if (description != string.Empty)
-                operationParameter.Description = description;
-
-            return operationParameter;
-        }
-
-        /// <summary>
-        /// 创建单值form类型
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
-        public SwaggerParameter CreatePrimitiveFormParameter(string name, ParameterInfo parameter)
-        {
-            var isRequired = IsParameterRequired(parameter);
-
-            var operationParameter = new SwaggerParameter
-            {
-                Name = name,
-                Kind = SwaggerParameterKind.FormData,
-                IsRequired = isRequired,
-            };
-
-            var description = parameter.GetXmlDocumentation();
-            if (description != string.Empty)
-                operationParameter.Description = description;
-
-            return operationParameter;
-
-        }
-
-        public SwaggerParameter CreatePrimitiveFroUri(string name, ParameterInfo parameter)
-        {
-            var isRequired =  IsParameterRequired(parameter);
-
-            var operationParameter = new SwaggerParameter
-            {
-                Name = name,
-                Kind = SwaggerParameterKind.Query,
-                IsRequired = isRequired,
-            };
-
-            var description = parameter.GetXmlDocumentation();
             if (description != string.Empty)
                 operationParameter.Description = description;
 
@@ -176,17 +134,13 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
             var isRequired = IsParameterRequired(parameter);
 
             var typeDescription = JsonObjectTypeDescription.FromType(parameter.ParameterType, parameter.GetCustomAttributes(), _settings.DefaultEnumHandling);
-
-            var schema = GenerateAndAppendSchemaFromType(parameter.ParameterType, !isRequired,
-                parameter.GetCustomAttributes());
-
             var operationParameter = new SwaggerParameter
             {
                 Name = name,
                 Kind = SwaggerParameterKind.Body,
                 IsRequired = isRequired,
                 IsNullableRaw = typeDescription.IsNullable,
-                Schema = schema.SchemaReference == null ? schema :schema.SchemaReference.ActualSchema,
+                Schema = GenerateAndAppendSchemaFromType(parameter.ParameterType, !isRequired, parameter.GetCustomAttributes()),
             };
 
             var description = parameter.GetXmlDocumentation();
@@ -233,28 +187,30 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
                     if (_settings.NullHandling == NullHandling.JsonSchema)
                     {
                         var schema = new JsonSchema4();
-
-                        schema.OneOf.Add(new JsonSchema4 {Type = JsonObjectType.Null});
-                        schema.OneOf.Add(new JsonSchema4 {SchemaReference = SchemaResolver.GetSchema(type, false)});
+                        schema.OneOf.Add(new JsonSchema4 { Type = JsonObjectType.Null });
+                        schema.OneOf.Add(new JsonSchema4 { SchemaReference = SchemaResolver.GetSchema(type, false) });
                         return schema;
                     }
-                    // TODO: Fix this bad design
-                    // IsNullable must be directly set on SwaggerParameter or SwaggerResponse
-                    return new JsonSchema4 {SchemaReference = SchemaResolver.GetSchema(type, false)};
+                    else
+                    {
+                        // TODO: Fix this bad design
+                        // IsNullable must be directly set on SwaggerParameter or SwaggerResponse
+                        return new JsonSchema4 { SchemaReference = SchemaResolver.GetSchema(type, false) };
+                    }
                 }
-                return new JsonSchema4 { SchemaReference = SchemaResolver.GetSchema(type, false) };
+                else
+                    return new JsonSchema4 { SchemaReference = SchemaResolver.GetSchema(type, false) };
             }
 
             if (typeDescription.Type.HasFlag(JsonObjectType.Array))
             {
                 var itemType = type.GetEnumerableItemType();
-                var schema = GenerateAndAppendSchemaFromType(itemType, false, null);
                 return new JsonSchema4
                 {
                     // TODO: Fix this bad design
                     // IsNullable must be directly set on SwaggerParameter or SwaggerResponse
                     Type = _settings.NullHandling == NullHandling.JsonSchema ? JsonObjectType.Array | JsonObjectType.Null : JsonObjectType.Array,
-                    Item = schema.SchemaReference == null ? schema :schema.SchemaReference.ActualSchema
+                    Item = GenerateAndAppendSchemaFromType(itemType, false, null)
                 };
             }
 
@@ -266,10 +222,17 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
             if (parameter == null)
                 return false;
 
-            if (parameter.GetCustomAttributes().Any(a => a.GetType().Name == this._settings.RequiredParemeterAttribute))
+            if (parameter.GetCustomAttributes().Any(a => a.GetType().Name == "RequiredAttribute"))
                 return true;
 
-            return !parameter.HasDefaultValue;
+            if (parameter.HasDefaultValue)
+                return false;
+
+            var isNullable = Nullable.GetUnderlyingType(parameter.ParameterType) != null;
+            if (isNullable)
+                return false;
+
+            return parameter.ParameterType.GetTypeInfo().IsValueType;
         }
 
         private bool IsFileResponse(Type returnType)
@@ -281,4 +244,5 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators
                    returnType.InheritsFrom("HttpResponseMessage", TypeNameStyle.Name);
         }
     }
+
 }
