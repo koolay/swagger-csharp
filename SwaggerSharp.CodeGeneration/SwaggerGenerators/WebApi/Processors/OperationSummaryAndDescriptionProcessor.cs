@@ -59,6 +59,11 @@ namespace SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi.Processors
                     context.OperationDescription.Operation.Summary = summary;
             }
 
+            if (string.IsNullOrEmpty(context.OperationDescription.Operation.Summary))
+            {
+                context.OperationDescription.Operation.Summary = context.MethodInfo.Name;
+            }
+
             var remarks = context.MethodInfo.GetXmlRemarks();
             if (remarks != string.Empty)
                 context.OperationDescription.Operation.Description = remarks;
