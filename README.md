@@ -9,7 +9,7 @@
 
 ```
 
-swaggerSharp.exe -c "SwaggerSharp.Examples.ProductController, SwaggerSharp.Examples.dll"
+swaggerSharp.exe -c "SwaggerSharp.Examples.ProductController, SwaggerSharp.Examples.dll" -o stdout
 
 ```
 

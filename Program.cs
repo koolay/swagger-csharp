@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using CommandLine;
 using SwaggerSharp.CodeGeneration.SwaggerGenerators.WebApi;
-using SwaggerSharp.Examples;
 
 
 namespace SwaggerSharp
 {
+
     internal class Options
     {
         [Option('a', "assembly", Required = false,
@@ -22,8 +20,18 @@ namespace SwaggerSharp
              HelpText = @"控制器controller名称.如:App.Controllers.ProjectController, App.Controllers.dll")]
         public IEnumerable<string> Controllers { get; set; }
 
-        [Option('i', "inherit", Required = false, HelpText = @"Controller父类, 如:SwaggerSharp.Examples.ControllerBase, SwaggerSharp.Examples.dll")]
+        [Option('i', "inherit", Required = false,
+             HelpText = @"Controller父类, 如:SwaggerSharp.Examples.ControllerBase, SwaggerSharp.Examples.dll")]
         public string InheritFrom { get; set; }
+
+        [Option('o', "output", Required = true,
+             HelpText = @"输出位置, 如:c:\s.json; stdout; http://myapp.com/api")]
+        public IEnumerable<string> Output { get; set; } = new [] {"stdout"};
+
+        [Option('H', "header", Required = false,
+             HelpText = @"输出为api时调用api请求的header, 如:x-ticket=xxxx")]
+        public IEnumerable<string> Header { get; set; }
+
 
         // Omitting long name, default --verbose
         [Option(
@@ -70,12 +78,11 @@ namespace SwaggerSharp
     {
         public static void Main(string[] args)
         {
-            var swaggerJson = string.Empty;
+            string swaggerJson;
             var result = Parser.Default.ParseArguments<Options>(args);
-            if (!result.Errors.Any())
+            result.WithParsed(opts =>
             {
                 var controllers = new List<Type>();
-                var opts = result.Value;
                 if (!opts.Assembly.Any() && !opts.Controllers.Any())
                 {
                     Console.WriteLine("至少请指定一个程序集或者控制器类");
@@ -96,14 +103,43 @@ namespace SwaggerSharp
 
                 if (opts.Controllers != null && opts.Controllers.Any())
                 {
-                    controllers.AddRange(opts.Controllers.Select(c=> { return Type.GetType(c);}));
+                    controllers.AddRange(opts.Controllers.Select(c => { return Type.GetType(c); }));
                 }
 
                 swaggerJson = ExportController(controllers, GetAPIConfig());
-                Console.Write(swaggerJson);
-            }
+                foreach (var outPutStr in opts.Output)
+                {
+                    IOutputer outPuter;
+                    if (outPutStr == "stdout")
+                    {
+                        outPuter = new Stdoutputer();
+                    }
+                    else if (outPutStr.EndsWith(".json"))
+                    {
+                        outPuter = new JsonOutputer(outPutStr);
+                    }
+                    else if (outPutStr.StartsWith("http"))
+                    {
+                        outPuter = new APIOutputer(outPutStr, opts.Header);
+                    }
+                    else
+                    {
+                        outPuter = new Stdoutputer();
+                    }
 
-            Console.WriteLine("complete");
+                    outPuter.Output(swaggerJson);
+                }
+
+
+            }).WithNotParsed(errs =>
+            {
+                Console.WriteLine("Failed");
+                foreach (var err in errs)
+                {
+                    Console.WriteLine(err.Tag.ToString());
+                }
+            });
+
 
         }
 
